@@ -1,0 +1,15 @@
+### Listar planos
+GET http://localhost:8080/planos
+Accept: application/json
+
+### Cadastrar plano
+POST http://localhost:8080/planos
+Content-Type: application/json
+
+{
+  "nome": "Plano Básico",
+  "descricao": "Plano de musculação",
+  "duracaoMeses": 12,
+  "valor": 99.90,
+  "ativo": true
+}
