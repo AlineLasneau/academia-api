@@ -1,0 +1,167 @@
+// Cada recurso da API é descrito aqui: campos do formulário e colunas da
+// tabela. O componente CrudPage monta a tela a partir desta configuração.
+
+import {
+  IconeAlunos,
+  IconeAvaliacoes,
+  IconeMensalidades,
+  IconePlanos,
+  IconeProfessores,
+  IconeTreinos,
+} from './components/Icones.jsx';
+
+const ALUNOS = { caminho: '/alunos', rotulo: 'nomeCompleto' };
+const PLANOS = { caminho: '/planos', rotulo: 'nome' };
+const PROFESSORES = { caminho: '/professores', rotulo: 'nomeCompleto' };
+
+export const recursos = [
+  {
+    id: 'alunos',
+    singular: 'aluno',
+    icone: IconeAlunos,
+    descricao: 'Cadastro e dados de contato dos alunos matriculados.',
+    titulo: 'Alunos',
+    caminho: '/alunos',
+    campos: [
+      { nome: 'nomeCompleto', rotulo: 'Nome completo', obrigatorio: true, largo: true },
+      { nome: 'cpf', rotulo: 'CPF', obrigatorio: true },
+      { nome: 'email', rotulo: 'E-mail', tipo: 'email', obrigatorio: true, largo: true },
+      { nome: 'telefone', rotulo: 'Telefone', tipo: 'tel', obrigatorio: true },
+      { nome: 'dataNascimento', rotulo: 'Data de nascimento', tipo: 'date', obrigatorio: true },
+    ],
+    colunas: [
+      { campo: 'nomeCompleto', rotulo: 'Nome', formato: 'pessoa' },
+      { campo: 'cpf', rotulo: 'CPF' },
+      { campo: 'email', rotulo: 'E-mail' },
+      { campo: 'telefone', rotulo: 'Telefone' },
+      { campo: 'dataNascimento', rotulo: 'Nascimento', formato: 'data' },
+      { campo: 'dataMatricula', rotulo: 'Matrícula', formato: 'data' },
+      { campo: 'ativo', rotulo: 'Situação', formato: 'ativo' },
+    ],
+  },
+  {
+    id: 'planos',
+    singular: 'plano',
+    icone: IconePlanos,
+    descricao: 'Planos oferecidos, com duração e valor.',
+    titulo: 'Planos',
+    caminho: '/planos',
+    campos: [
+      { nome: 'nome', rotulo: 'Nome', obrigatorio: true, largo: true },
+      { nome: 'descricao', rotulo: 'Descrição', tipo: 'textarea', largo: true },
+      { nome: 'duracaoMeses', rotulo: 'Duração (meses)', tipo: 'number', min: 1, passo: 1, obrigatorio: true },
+      { nome: 'valor', rotulo: 'Valor (R$)', tipo: 'number', min: 0.01, passo: 0.01, obrigatorio: true },
+    ],
+    colunas: [
+      { campo: 'nome', rotulo: 'Nome' },
+      { campo: 'descricao', rotulo: 'Descrição', formato: 'longo' },
+      { campo: 'duracaoMeses', rotulo: 'Duração (meses)' },
+      { campo: 'valor', rotulo: 'Valor', formato: 'moeda' },
+      { campo: 'ativo', rotulo: 'Situação', formato: 'ativo' },
+    ],
+  },
+  {
+    id: 'mensalidades',
+    singular: 'mensalidade',
+    icone: IconeMensalidades,
+    descricao: 'Cobranças dos alunos e situação de pagamento.',
+    titulo: 'Mensalidades',
+    caminho: '/mensalidades',
+    campos: [
+      { nome: 'alunoId', rotulo: 'Aluno', tipo: 'select', fonte: ALUNOS, obrigatorio: true },
+      { nome: 'planoId', rotulo: 'Plano', tipo: 'select', fonte: PLANOS, obrigatorio: true },
+      { nome: 'valor', rotulo: 'Valor (R$)', tipo: 'number', min: 0.01, passo: 0.01, obrigatorio: true },
+      { nome: 'dataVencimento', rotulo: 'Vencimento', tipo: 'date', obrigatorio: true },
+      { nome: 'dataPagamento', rotulo: 'Pagamento', tipo: 'date' },
+      {
+        nome: 'status',
+        rotulo: 'Situação',
+        tipo: 'select',
+        padrao: 'PENDENTE',
+        opcoes: [
+          { valor: 'PENDENTE', rotulo: 'Pendente' },
+          { valor: 'PAGO', rotulo: 'Pago' },
+          { valor: 'ATRASADO', rotulo: 'Atrasado' },
+        ],
+      },
+    ],
+    colunas: [
+      { campo: 'alunoId', rotulo: 'Aluno', formato: 'referencia-pessoa' },
+      { campo: 'planoId', rotulo: 'Plano', formato: 'referencia' },
+      { campo: 'valor', rotulo: 'Valor', formato: 'moeda' },
+      { campo: 'dataVencimento', rotulo: 'Vencimento', formato: 'data' },
+      { campo: 'dataPagamento', rotulo: 'Pagamento', formato: 'data' },
+      { campo: 'status', rotulo: 'Situação', formato: 'status' },
+    ],
+  },
+  {
+    id: 'professores',
+    singular: 'professor',
+    icone: IconeProfessores,
+    descricao: 'Equipe de professores e suas especialidades.',
+    titulo: 'Professores',
+    caminho: '/professores',
+    campos: [
+      { nome: 'nomeCompleto', rotulo: 'Nome completo', obrigatorio: true, largo: true },
+      { nome: 'cpf', rotulo: 'CPF', obrigatorio: true },
+      { nome: 'email', rotulo: 'E-mail', tipo: 'email', obrigatorio: true, largo: true },
+      { nome: 'telefone', rotulo: 'Telefone', tipo: 'tel', obrigatorio: true },
+      { nome: 'especialidade', rotulo: 'Especialidade', obrigatorio: true },
+    ],
+    colunas: [
+      { campo: 'nomeCompleto', rotulo: 'Nome', formato: 'pessoa' },
+      { campo: 'cpf', rotulo: 'CPF' },
+      { campo: 'email', rotulo: 'E-mail' },
+      { campo: 'telefone', rotulo: 'Telefone' },
+      { campo: 'especialidade', rotulo: 'Especialidade' },
+      { campo: 'ativo', rotulo: 'Situação', formato: 'ativo' },
+    ],
+  },
+  {
+    id: 'treinos',
+    singular: 'treino',
+    icone: IconeTreinos,
+    descricao: 'Fichas de treino montadas para cada aluno.',
+    titulo: 'Treinos',
+    caminho: '/treinos',
+    filtroPorAluno: true,
+    campos: [
+      { nome: 'nome', rotulo: 'Nome', obrigatorio: true, largo: true },
+      { nome: 'descricao', rotulo: 'Descrição', tipo: 'textarea', largo: true },
+      { nome: 'alunoId', rotulo: 'Aluno', tipo: 'select', fonte: ALUNOS, obrigatorio: true },
+      { nome: 'professorId', rotulo: 'Professor', tipo: 'select', fonte: PROFESSORES, obrigatorio: true },
+    ],
+    colunas: [
+      { campo: 'nome', rotulo: 'Nome' },
+      { campo: 'descricao', rotulo: 'Descrição', formato: 'longo' },
+      { campo: 'alunoId', rotulo: 'Aluno', formato: 'referencia-pessoa' },
+      { campo: 'professorId', rotulo: 'Professor', formato: 'referencia-pessoa' },
+      { campo: 'dataCriacao', rotulo: 'Criado em', formato: 'data' },
+    ],
+  },
+  {
+    id: 'avaliacoes',
+    singular: 'avaliação física',
+    icone: IconeAvaliacoes,
+    descricao: 'Histórico de medidas e composição corporal.',
+    titulo: 'Avaliações físicas',
+    caminho: '/avaliacoes-fisicas',
+    filtroPorAluno: true,
+    campos: [
+      { nome: 'alunoId', rotulo: 'Aluno', tipo: 'select', fonte: ALUNOS, obrigatorio: true },
+      { nome: 'dataAvaliacao', rotulo: 'Data da avaliação', tipo: 'date', obrigatorio: true },
+      { nome: 'peso', rotulo: 'Peso (kg)', tipo: 'number', min: 1, passo: 0.1, obrigatorio: true },
+      { nome: 'altura', rotulo: 'Altura (m)', tipo: 'number', min: 0.5, passo: 0.01, obrigatorio: true },
+      { nome: 'percentualGordura', rotulo: 'Gordura (%)', tipo: 'number', min: 0, passo: 0.1 },
+      { nome: 'observacoes', rotulo: 'Observações', tipo: 'textarea', largo: true },
+    ],
+    colunas: [
+      { campo: 'alunoId', rotulo: 'Aluno', formato: 'referencia-pessoa' },
+      { campo: 'dataAvaliacao', rotulo: 'Data', formato: 'data' },
+      { campo: 'peso', rotulo: 'Peso (kg)', formato: 'numero' },
+      { campo: 'altura', rotulo: 'Altura (m)', formato: 'numero' },
+      { campo: 'percentualGordura', rotulo: 'Gordura (%)', formato: 'numero' },
+      { campo: 'observacoes', rotulo: 'Observações', formato: 'longo' },
+    ],
+  },
+];

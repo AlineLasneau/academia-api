@@ -183,6 +183,25 @@ Após a inicialização, a API estará disponível em:
 
 `http://localhost:8080`
 
+### Executar o frontend
+
+O frontend fica na pasta `frontend/` e foi feito com React e Vite. Ele
+precisa do Node.js 18 ou superior e da API rodando na porta 8080.
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Acesse `http://localhost:5173`. As chamadas para `/api` são repassadas
+para a API pelo proxy do Vite, então não é preciso configurar CORS.
+
+A interface tem uma seção para cada recurso (alunos, planos,
+mensalidades, professores, treinos e avaliações físicas), com listagem,
+cadastro, edição e exclusão. Treinos e avaliações podem ser filtrados
+por aluno.
+
 ## Executando os testes
 
 **Windows:**
@@ -203,7 +222,7 @@ Os testes utilizam JUnit 5, Spring Boot Test e MockMvc para verificar o funciona
 
 Na última execução de `mvnw clean test`, foram obtidos os seguintes resultados:
 
-- 57 testes executados.
+- 68 testes executados.
 - 0 falhas.
 - 0 erros.
 - 0 testes ignorados.
@@ -220,9 +239,9 @@ Principais códigos HTTP utilizados:
 | 200 | Requisição realizada com sucesso |
 | 201 | Recurso criado com sucesso |
 | 204 | Recurso excluído com sucesso |
-| 400 | Dados inválidos ou campos obrigatórios ausentes |
+| 400 | Dados inválidos, campos obrigatórios ausentes ou JSON malformado |
 | 404 | Recurso não encontrado |
-| 409 | Conflito de dados, como CPF ou e-mail duplicado |
+| 409 | Conflito: CPF ou e-mail duplicado, ou exclusão de registro com vínculos |
 
 ---
 

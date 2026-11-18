@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,12 +21,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-@TestPropertySource(properties = {
-        "spring.datasource.url=jdbc:h2:mem:academia-test;DB_CLOSE_DELAY=-1",
-        "spring.datasource.driver-class-name=org.h2.Driver",
-        "spring.jpa.hibernate.ddl-auto=create-drop",
-        "spring.jpa.show-sql=false"
-})
 class MensalidadeControllerTest {
 
     @Autowired
@@ -81,7 +74,7 @@ class MensalidadeControllerTest {
         mockMvc.perform(post("/mensalidades")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.valor").value(99.90))
                 .andExpect(jsonPath("$.status").value("PENDENTE"));
     }
@@ -110,7 +103,7 @@ class MensalidadeControllerTest {
         mockMvc.perform(post("/mensalidades")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         Long id = mensalidadeRepository.findAll().get(0).getId();
 
@@ -143,7 +136,7 @@ class MensalidadeControllerTest {
         mockMvc.perform(post("/mensalidades")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mensalidadeOriginal))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         Long id = mensalidadeRepository.findAll().get(0).getId();
 
@@ -185,7 +178,7 @@ class MensalidadeControllerTest {
         mockMvc.perform(post("/mensalidades")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         Long id = mensalidadeRepository.findAll().get(0).getId();
 
@@ -276,7 +269,7 @@ class MensalidadeControllerTest {
         mockMvc.perform(post("/mensalidades")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(original))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         Long id = mensalidadeRepository.findAll().get(0).getId();
 
@@ -334,7 +327,7 @@ class MensalidadeControllerTest {
         mockMvc.perform(post("/mensalidades")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(original))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         Long id = mensalidadeRepository.findAll().get(0).getId();
 
@@ -352,5 +345,13 @@ class MensalidadeControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(atualizado))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deveRetornarMensagemQuandoMensalidadeNaoExistir() throws Exception {
+        mockMvc.perform(get("/mensalidades/9999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.erro")
+                        .value("Mensalidade não encontrada."));
     }
 }

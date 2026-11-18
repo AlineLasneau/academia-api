@@ -3,10 +3,10 @@ package com.academia.api.controller;
 
 import com.academia.api.dto.MensalidadeCreateRequest;
 import com.academia.api.dto.MensalidadeResponse;
-import com.academia.api.exception.MensalidadeNotFoundException;
 import com.academia.api.mapper.MensalidadeMapper;
 import com.academia.api.service.MensalidadeService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,11 +23,12 @@ public class MensalidadeController {
     }
 
     @PostMapping
-    public MensalidadeResponse cadastrar(
+    public ResponseEntity<MensalidadeResponse> cadastrar(
             @Valid @RequestBody MensalidadeCreateRequest request) {
         var mensalidade = MensalidadeMapper.toEntity(request);
-        return MensalidadeMapper.toResponse(
-                mensalidadeService.cadastrar(mensalidade));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(MensalidadeMapper.toResponse(
+                        mensalidadeService.cadastrar(mensalidade)));
     }
 
     @GetMapping
@@ -39,12 +40,8 @@ public class MensalidadeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MensalidadeResponse> buscarPorId(
-            @PathVariable Long id) {
-        return mensalidadeService.buscarPorId(id)
-                .map(mensalidade -> ResponseEntity.ok(
-                        MensalidadeMapper.toResponse(mensalidade)))
-                .orElse(ResponseEntity.notFound().build());
+    public MensalidadeResponse buscarPorId(@PathVariable Long id) {
+        return MensalidadeMapper.toResponse(mensalidadeService.buscarPorId(id));
     }
 
     @PutMapping("/{id}")

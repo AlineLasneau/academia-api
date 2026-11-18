@@ -6,4 +6,8 @@ import java.util.List;
 
 public interface TreinoRepository extends JpaRepository<Treino, Long> {
     List<Treino> findByAlunoId(Long alunoId);
+
+    boolean existsByAlunoId(Long alunoId);
+
+    boolean existsByProfessorId(Long professorId);
 }

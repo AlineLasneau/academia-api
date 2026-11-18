@@ -1,20 +1,27 @@
 package com.academia.api.service;
 
 import com.academia.api.model.Plano;
+import com.academia.api.repository.MensalidadeRepository;
 import com.academia.api.repository.PlanoRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.academia.api.exception.PlanoNotFoundException;
+import com.academia.api.exception.RegistroVinculadoException;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
+@Transactional
 public class PlanoService {
 
     private final PlanoRepository planoRepository;
+    private final MensalidadeRepository mensalidadeRepository;
 
-    public PlanoService(PlanoRepository planoRepository) {
+    public PlanoService(
+            PlanoRepository planoRepository,
+            MensalidadeRepository mensalidadeRepository) {
         this.planoRepository = planoRepository;
+        this.mensalidadeRepository = mensalidadeRepository;
     }
 
     public Plano cadastrar(Plano plano) {
@@ -25,8 +32,9 @@ public class PlanoService {
         return planoRepository.findAll();
     }
 
-    public Optional<Plano> buscarPorId(Long id) {
-        return planoRepository.findById(id);
+    public Plano buscarPorId(Long id) {
+        return planoRepository.findById(id)
+                .orElseThrow(PlanoNotFoundException::new);
     }
 
     public Plano atualizar(Long id, Plano planoAtualizado) {
@@ -37,7 +45,6 @@ public class PlanoService {
         plano.setDescricao(planoAtualizado.getDescricao());
         plano.setDuracaoMeses(planoAtualizado.getDuracaoMeses());
         plano.setValor(planoAtualizado.getValor());
-        plano.setAtivo(planoAtualizado.getAtivo());
 
         return planoRepository.save(plano);
     }
@@ -45,6 +52,12 @@ public class PlanoService {
     public void excluir(Long id) {
         if (!planoRepository.existsById(id)) {
             throw new PlanoNotFoundException();
+        }
+
+        if (mensalidadeRepository.existsByPlanoId(id)) {
+            throw new RegistroVinculadoException(
+                    "O plano possui mensalidades vinculadas "
+                            + "e não pode ser excluído.");
         }
 
         planoRepository.deleteById(id);

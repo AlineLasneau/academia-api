@@ -2,9 +2,11 @@ package com.academia.api.exception;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,14 +29,43 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(erros);
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, String>> tratarCorpoInvalido(
+            HttpMessageNotReadableException exception) {
+        return ResponseEntity.badRequest()
+                .body(Map.of("erro",
+                        "Corpo da requisição inválido: verifique o formato "
+                                + "do JSON e os tipos dos campos."));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, String>> tratarParametroInvalido(
+            MethodArgumentTypeMismatchException exception) {
+        return ResponseEntity.badRequest()
+                .body(Map.of("erro",
+                        "Valor inválido para o parâmetro '"
+                                + exception.getName() + "'."));
+    }
+
+    @ExceptionHandler({
+            DadoDuplicadoException.class,
+            RegistroVinculadoException.class
+    })
+    public ResponseEntity<Map<String, String>> tratarConflito(
+            RuntimeException exception) {
+        return ResponseEntity.status(409)
+                .body(Map.of("erro", exception.getMessage()));
+    }
+
+    // Rede de segurança para restrições do banco que escapem das
+    // verificações dos services (ex.: duas requisições simultâneas).
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Map<String, String>> tratarDuplicidade(
+    public ResponseEntity<Map<String, String>> tratarViolacaoIntegridade(
             DataIntegrityViolationException exception) {
-
-        Map<String, String> erro = new HashMap<>();
-        erro.put("erro", "CPF ou e-mail já cadastrado.");
-
-        return ResponseEntity.status(409).body(erro);
+        return ResponseEntity.status(409)
+                .body(Map.of("erro",
+                        "A operação viola uma restrição de integridade: "
+                                + "dado duplicado ou registro vinculado."));
     }
 
     @ExceptionHandler(AlunoNotFoundException.class)

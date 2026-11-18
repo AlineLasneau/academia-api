@@ -6,6 +6,7 @@ import com.academia.api.dto.AlunoResponse;
 import com.academia.api.mapper.AlunoMapper;
 import com.academia.api.service.AlunoService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,10 +23,11 @@ public class AlunoController {
     }
 
     @PostMapping
-    public AlunoResponse cadastrar(
+    public ResponseEntity<AlunoResponse> cadastrar(
             @Valid @RequestBody AlunoCreateRequest request) {
         var aluno = AlunoMapper.toEntity(request);
-        return AlunoMapper.toResponse(alunoService.cadastrar(aluno));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(AlunoMapper.toResponse(alunoService.cadastrar(aluno)));
     }
 
     @GetMapping
@@ -37,12 +39,8 @@ public class AlunoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AlunoResponse> buscarPorId(
-            @PathVariable Long id) {
-        return alunoService.buscarPorId(id)
-                .map(aluno -> ResponseEntity.ok(
-                        AlunoMapper.toResponse(aluno)))
-                .orElse(ResponseEntity.notFound().build());
+    public AlunoResponse buscarPorId(@PathVariable Long id) {
+        return AlunoMapper.toResponse(alunoService.buscarPorId(id));
     }
 
     @PutMapping("/{id}")

@@ -10,11 +10,12 @@ import com.academia.api.exception.MensalidadeNotFoundException;
 import com.academia.api.exception.PlanoNotFoundException;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
+@Transactional
 public class MensalidadeService {
 
     private final MensalidadeRepository mensalidadeRepository;
@@ -59,8 +60,9 @@ public class MensalidadeService {
         return mensalidadeRepository.findAll();
     }
 
-    public Optional<Mensalidade> buscarPorId(Long id) {
-        return mensalidadeRepository.findById(id);
+    public Mensalidade buscarPorId(Long id) {
+        return mensalidadeRepository.findById(id)
+                .orElseThrow(MensalidadeNotFoundException::new);
     }
 
     public Mensalidade atualizar(Long id, Mensalidade mensalidadeAtualizada) {

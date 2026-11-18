@@ -5,6 +5,7 @@ import com.academia.api.dto.PlanoResponse;
 import com.academia.api.mapper.PlanoMapper;
 import com.academia.api.service.PlanoService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,10 +22,11 @@ public class PlanoController {
     }
 
     @PostMapping
-    public PlanoResponse cadastrar(
+    public ResponseEntity<PlanoResponse> cadastrar(
             @Valid @RequestBody PlanoCreateRequest request) {
         var plano = PlanoMapper.toEntity(request);
-        return PlanoMapper.toResponse(planoService.cadastrar(plano));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(PlanoMapper.toResponse(planoService.cadastrar(plano)));
     }
 
     @GetMapping
@@ -36,12 +38,8 @@ public class PlanoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PlanoResponse> buscarPorId(
-            @PathVariable Long id) {
-        return planoService.buscarPorId(id)
-                .map(plano -> ResponseEntity.ok(
-                        PlanoMapper.toResponse(plano)))
-                .orElse(ResponseEntity.notFound().build());
+    public PlanoResponse buscarPorId(@PathVariable Long id) {
+        return PlanoMapper.toResponse(planoService.buscarPorId(id));
     }
 
     @PutMapping("/{id}")

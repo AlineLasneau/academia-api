@@ -2,32 +2,40 @@ package com.academia.api.service;
 
 import com.academia.api.model.Professor;
 import com.academia.api.repository.ProfessorRepository;
+import com.academia.api.repository.TreinoRepository;
+import com.academia.api.exception.DadoDuplicadoException;
 import com.academia.api.exception.ProfessorNotFoundException;
+import com.academia.api.exception.RegistroVinculadoException;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional
 public class ProfessorService {
 
     private final ProfessorRepository repository;
+    private final TreinoRepository treinoRepository;
 
-    public ProfessorService(ProfessorRepository repository) {
+    public ProfessorService(
+            ProfessorRepository repository,
+            TreinoRepository treinoRepository) {
         this.repository = repository;
+        this.treinoRepository = treinoRepository;
     }
 
     public Professor cadastrar(Professor professor) {
 
         if (repository.existsByCpf(professor.getCpf())) {
-            throw new DataIntegrityViolationException(
+            throw new DadoDuplicadoException(
                     "CPF já cadastrado."
             );
         }
 
         if (repository.existsByEmail(professor.getEmail())) {
-            throw new DataIntegrityViolationException(
+            throw new DadoDuplicadoException(
                     "E-mail já cadastrado."
             );
         }
@@ -49,13 +57,13 @@ public class ProfessorService {
         Professor professor = buscar(id);
 
         if (repository.existsByCpfAndIdNot(novo.getCpf(), id)) {
-            throw new DataIntegrityViolationException(
+            throw new DadoDuplicadoException(
                     "CPF já cadastrado."
             );
         }
 
         if (repository.existsByEmailAndIdNot(novo.getEmail(), id)) {
-            throw new DataIntegrityViolationException(
+            throw new DadoDuplicadoException(
                     "E-mail já cadastrado."
             );
         }
@@ -70,6 +78,14 @@ public class ProfessorService {
     }
 
     public void excluir(Long id) {
-        repository.delete(buscar(id));
+        Professor professor = buscar(id);
+
+        if (treinoRepository.existsByProfessorId(id)) {
+            throw new RegistroVinculadoException(
+                    "O professor possui treinos vinculados "
+                            + "e não pode ser excluído.");
+        }
+
+        repository.delete(professor);
     }
 }

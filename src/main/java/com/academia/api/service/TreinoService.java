@@ -7,9 +7,11 @@ import com.academia.api.exception.AlunoNotFoundException;
 import com.academia.api.exception.ProfessorNotFoundException;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@Transactional
 public class TreinoService {
 
     private final TreinoRepository treinoRepository;

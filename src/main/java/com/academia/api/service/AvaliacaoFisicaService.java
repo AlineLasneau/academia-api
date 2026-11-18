@@ -5,9 +5,11 @@ import com.academia.api.repository.*;
 import com.academia.api.exception.*;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@Transactional
 public class AvaliacaoFisicaService {
 
     private final AvaliacaoFisicaRepository repository;

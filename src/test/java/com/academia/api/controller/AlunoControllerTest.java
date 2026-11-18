@@ -5,11 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import com.academia.api.repository.AlunoRepository;
+import com.academia.api.repository.PlanoRepository;
+import com.academia.api.model.Plano;
+import java.math.BigDecimal;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 
@@ -19,12 +21,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-@TestPropertySource(properties = {
-        "spring.datasource.url=jdbc:h2:mem:academia-test;DB_CLOSE_DELAY=-1",
-        "spring.datasource.driver-class-name=org.h2.Driver",
-        "spring.jpa.hibernate.ddl-auto=create-drop",
-        "spring.jpa.show-sql=false"
-})
 class AlunoControllerTest {
 
     @Autowired
@@ -32,6 +28,9 @@ class AlunoControllerTest {
 
     @Autowired
     private AlunoRepository alunoRepository;
+
+    @Autowired
+    private PlanoRepository planoRepository;
 
     @Test
     void deveCadastrarAlunoComSucesso() throws Exception {
@@ -49,7 +48,7 @@ class AlunoControllerTest {
         mockMvc.perform(post("/alunos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(alunoJson))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.nomeCompleto").value("Maria Silva"))
                 .andExpect(jsonPath("$.email").value("maria@email.com"));
@@ -92,7 +91,7 @@ class AlunoControllerTest {
         mockMvc.perform(post("/alunos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(alunoJson))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         mockMvc.perform(get("/alunos"))
                 .andExpect(status().isOk())
@@ -118,7 +117,7 @@ class AlunoControllerTest {
         mockMvc.perform(post("/alunos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(alunoJson))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         Long id = alunoRepository.findAll().get(0).getId();
 
@@ -156,7 +155,7 @@ class AlunoControllerTest {
         mockMvc.perform(post("/alunos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(alunoOriginal))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         Long id = alunoRepository.findAll().get(0).getId();
 
@@ -196,7 +195,7 @@ class AlunoControllerTest {
         mockMvc.perform(post("/alunos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(alunoJson))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         Long id = alunoRepository.findAll().get(0).getId();
 
@@ -233,14 +232,14 @@ class AlunoControllerTest {
         mockMvc.perform(post("/alunos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(primeiroAluno))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         mockMvc.perform(post("/alunos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(segundoAluno))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.erro")
-                        .value("CPF ou e-mail já cadastrado."));
+                        .value("CPF já cadastrado."));
     }
 
     @Test
@@ -269,14 +268,14 @@ class AlunoControllerTest {
         mockMvc.perform(post("/alunos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(primeiroAluno))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         mockMvc.perform(post("/alunos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(segundoAluno))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.erro")
-                        .value("CPF ou e-mail já cadastrado."));
+                        .value("E-mail já cadastrado."));
     }
 
     @Test
@@ -295,7 +294,7 @@ class AlunoControllerTest {
         mockMvc.perform(post("/alunos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(alunoOriginal))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         Long id = alunoRepository.findAll().get(0).getId();
 
@@ -322,4 +321,98 @@ class AlunoControllerTest {
     }
 
 
+    @Test
+    void naoDeveExcluirAlunoComMensalidadeVinculada() throws Exception {
+
+        String alunoJson = """
+        {
+            "nomeCompleto": "Lucas Lima",
+            "cpf": "44455566677",
+            "email": "lucas@email.com",
+            "telefone": "11933333333",
+            "dataNascimento": "1995-02-02"
+        }
+        """;
+
+        mockMvc.perform(post("/alunos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(alunoJson))
+                .andExpect(status().isCreated());
+
+        Long alunoId = alunoRepository.findAll().get(0).getId();
+
+        Plano plano = new Plano();
+        plano.setNome("Plano Mensal");
+        plano.setDuracaoMeses(1);
+        plano.setValor(new BigDecimal("99.90"));
+        Long planoId = planoRepository.save(plano).getId();
+
+        String mensalidadeJson = """
+        {
+            "alunoId": %d,
+            "planoId": %d,
+            "valor": 99.90,
+            "dataVencimento": "2026-12-10"
+        }
+        """.formatted(alunoId, planoId);
+
+        mockMvc.perform(post("/mensalidades")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mensalidadeJson))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(delete("/alunos/" + alunoId))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.erro").value(
+                        "O aluno possui mensalidades, treinos ou avaliações "
+                                + "físicas vinculados e não pode ser excluído."));
+
+        mockMvc.perform(get("/alunos/" + alunoId))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void deveRetornarMensagemQuandoAlunoNaoExistir() throws Exception {
+        mockMvc.perform(get("/alunos/999999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.erro").value("Aluno não encontrado."));
+    }
+
+    @Test
+    void deveRetornar400ParaJsonMalformado() throws Exception {
+        mockMvc.perform(post("/alunos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"nomeCompleto\": "))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.erro").value(
+                        "Corpo da requisição inválido: verifique o formato "
+                                + "do JSON e os tipos dos campos."));
+    }
+
+    @Test
+    void deveRetornar400ParaDataEmFormatoInvalido() throws Exception {
+        String alunoJson = """
+        {
+            "nomeCompleto": "Maria Silva",
+            "cpf": "12345678900",
+            "email": "maria@email.com",
+            "telefone": "11999999999",
+            "dataNascimento": "15/05/2000"
+        }
+        """;
+
+        mockMvc.perform(post("/alunos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(alunoJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.erro").exists());
+    }
+
+    @Test
+    void deveRetornar400ParaIdNaoNumerico() throws Exception {
+        mockMvc.perform(get("/alunos/abc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.erro")
+                        .value("Valor inválido para o parâmetro 'id'."));
+    }
 }

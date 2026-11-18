@@ -9,4 +9,6 @@ public interface AvaliacaoFisicaRepository
 
     List<AvaliacaoFisica> findByAlunoIdOrderByDataAvaliacaoDesc(
             Long alunoId);
+
+    boolean existsByAlunoId(Long alunoId);
 }
